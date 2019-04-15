@@ -49,3 +49,8 @@
 * Папки templates содержит все html файлы
 * Папки static необходима для хранения различных файлов
 
+Вспомогательные источники
+---------------------
+Документация по Bootstrap https://getbootstrap.com/docs/4.3/components/alerts/
+
+Элементы FlaskForm https://wtforms.readthedocs.io/en/stable/fields.html
