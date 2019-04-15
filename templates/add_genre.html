@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+ 
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+          {{ message }}
+        </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+    <form action="" method="post" novalidate style="margin-left: 10px; margin-top: 20px">
+        {{ form.hidden_tag() }}
+        <h1>Добавление жанра</h1>
+        <p>
+            {{ form.new_genre.label }}<br>
+            {{ form.new_genre }}<br>
+            {% for error in form.new_genre.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+        <a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+    </form>
+    <div style="padding-top: 30px; padding-left:10px">
+    <b>Имеющиеся жанры:</b>
+    <ul class="list-group">
+    {% for item in genres %}
+        <li class="list-group-item">{{ item.genre_name }}<a href="/delete_genre/{{ item.genre_id }}"><button style="left: 920px; position: absolute">Удалить</button></a></li>
+    {% endfor %}
+    </ul>
+    </div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+ 
+{% block content %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-primary" role="alert">
+              {{ message }}
+            </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form action="" method="post" novalidate style="margin-left: 10px; margin-top: 20px" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <p>
+            <h1>Добавление игры</h1>
+            {{ form.game_name.label }}<br>
+            {{ form.game_name }}<br>
+            {% for error in form.game_name.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.genre.label }}<br>
+            {{ form.genre }}<br>
+            {% for error in form.genre.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.description.label }}<br>
+            {{ form.description }}<br>
+            {% for error in form.description.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.system_req.label }}<br>
+            {{ form.system_req }}<br>
+            {% for error in form.system_req.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.price.label }}<br>
+            {{ form.price }}<br>
+            {% for error in form.price.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.languages.label }}<br>
+            {{ form.languages }}<br>
+            {% for error in form.languages.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.game_year.label }}<br>
+            {{ form.game_year }}<br>
+            {% for error in form.game_year.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.image.file }}<br>
+            {{ form.image }}<br>
+            {% for error in form.image.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+                <p>
+            {{ form.count.label }}<br>
+            {{ form.count }}<br>
+            {% for error in form.count.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+        <a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+    </form>
+{% endblock %}

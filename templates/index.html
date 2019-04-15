@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="margin-top: 30px; padding-top: 15px; padding-left: 20px">
+        <div>
+        <b>Сортировка по:</b>
+        <a href="/sort_by_year_up"><button type="button" class="btn btn-outline-primary" style="margin-left: 5px">Старые</button></a>
+        <a href="/sort_by_year_down"><button type="button" class="btn btn-outline-primary" style="margin-left: 5px">Новые</button></a>
+        <a href="/sort_by_price_down"><button type="button" class="btn btn-outline-primary" style="margin-left: 5px">Дорогие</button></a>
+        <a href="/sort_by_price_up"><button type="button" class="btn btn-outline-primary" style="margin-left: 5px" >Дешевые</button></a>
+        <b style="padding-left: 20px">Фильтрация по: </b>
+        <a href="/filter_by_price"><button type="button" class="btn btn-outline-primary" style="margin-left: 5px">Цена</button></a>
+        <a href="/filter_by_genre"><button type="button" class="btn btn-outline-primary" style="margin-left: 5px">Жанр</button></a>
+        <a href="/filter_down"><button type="button" class="btn btn-outline-primary" style="margin-left: 40px">Сбросить фильтр</button></a>
+        </div>
+    </div>
+    {% if not games %}
+    <i style="padding-top:20px; position: absolute; left: 665px">Поиск не нашел ни одного подходяшего товара</i>
+    {% endif %}
+    {% for game in games %}
+    <div style="height: 159px; width: 800px; margin-top: 30px; position: relative; left: 10px; top: 20px">
+        <a style="height: 159px; background-color: #C0C0C0; display: block" href="/game_info/{{ game.game_id }}">
+            <div style="height: 159px; width: 300px; background: url(static/img/game_images/{{game.image}})"></div>
+            <div style="left: 320px; top: 1px; position: absolute; font-size: 24px">{{game.game_name}}</div>
+            <div style="left: 700px; top: 120px; position: absolute; font-size: 24px">{{game.price}} ₽</div>
+            <div style="left: 320px; top: 40px; position: absolute; font-size: 14px">Жанр: {{game.genre}}</div>
+            <div style="left: 320px; top: 65px; position: absolute; font-size: 14px">Год выпуска: {{game.game_year}}</div>
+        </a>
+    </div>
+    {% endfor %}
+    <p style="margin-top: 100px; padding-left: 400px">FlaskGameStore Copyright 2019</p>
+{% endblock %}

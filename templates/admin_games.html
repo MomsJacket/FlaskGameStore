@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if "username" in session %}
+    {% for game in games %}
+    <div style="height: 159px; width: 800px; margin-top: 45px; position: relative; left: 10px; top: 20px">
+        <a style="height: 159px; background-color: #C0C0C0; display: block" href="/game_info/{{ game.game_id }}">
+            <div style="height: 159px; width: 300px; background: url(static/img/game_images/{{game.image}})"></div>
+            <div style="left: 320px; top: 1px; position: absolute; font-size: 24px">{{game.game_name}}</div>
+            <div style="left: 700px; top: 120px; position: absolute; font-size: 24px">{{game.price}} ₽</div>
+            <div style="left: 320px; top: 40px; position: absolute; font-size: 14px">Жанр: {{game.genre}}</div>
+            <div style="left: 320px; top: 65px; position: absolute; font-size: 14px">Год выпуска: {{game.game_year}}</div>
+            <div style="left: 320px; top: 120px; position: absolute; font-size: 14px">Кол-во товара: {{game.count}}</div>
+        </a>
+        <a href="/delete_game/{{ game.game_id }}"> <button type="button" class="btn btn-outline-info" onclick="return confirm('Вы точно хотите удалить модель из списка?')">Удалить</button></a>
+        <a href="/change_count/{{ game.game_id }}"> <button type="button" class="btn btn-outline-info">Редактировать кол-во товара</button></a>
+    </div>
+    {% endfor %}
+    <div style="margin-top: 30px"><a href="/index" style="padding-left: 470px"> <button type="button" class="btn btn-outline-info" style="margin-top: 30px">Назад</button></a></div>
+    <p style="margin-top: 100px; padding-left: 400px">FlaskGameStore Copyright 2019</p>
+{% endif %}
+{% endblock %}

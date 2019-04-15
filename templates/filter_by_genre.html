@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+ 
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+          {{ message }}
+        </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+    <form action="" method="post" novalidate style="margin-left: 10px; margin-top: 20px">
+        {{ form.hidden_tag() }}
+        <h1>Фильтрация по жанру</h1>
+        <p>
+            {{ form.filter_genre.label }}<br>
+            {{ form.filter_genre }}<br>
+            {% for error in form.filter_genre.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+        <a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+    </form>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if not items %}
+	<i style="position: absolute; left: 635px">На данный момент в вашей корзине не имеется покупок</i>
+{% endif %}
+
+{% for item in items %}
+    <div style="height: 159px; width: 800px; margin-top: 30px; position: relative; left: 10px; top: 20px">
+        <div style="height: 159px; background-color: #C0C0C0; display: block">
+            <div style="height: 159px; width: 300px; background: url(static/img/game_images/{{item[0].image}})"></div>
+            <div style="left: 320px; top: 1px; position: absolute; font-size: 24px">{{item[0].game_name}}</div>
+            <div style="left: 700px; top: 120px; position: absolute; font-size: 24px">{{item[0].price}} ₽</div>
+			<a href="/delete_pur/{{ item[1].pur_id }}/{{ item[0].game_id }}"><div style="left: 320px; top: 120px; position: absolute; font-size: 18px">Убрать из корзины</div></a>
+        </div>
+    </div>
+    {% endfor %}
+	{% if items %}
+	<b style="margin-top: 30px; margin-left: 10px; position: absolute; left: 320px">Итого к оплате: {{ check }} рублей.</b>
+	{% endif %}
+	<a href="/index"> <button type="button" class="btn btn-outline-info" style="margin-top: 60px; margin-left: 10px">Назад</button></a>
+	{% if items %}
+	<a href="/buy_purs/{{ ids }}"> <button type="button" class="btn btn-outline-info" style="margin-top: 60px; margin-left: 10px">Купить все</button></a>
+	{% endif %}
+{% endblock %}

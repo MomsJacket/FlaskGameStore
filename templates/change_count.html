@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+ 
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+          {{ message }}
+        </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+    <form action="" method="post" novalidate style="margin-left: 10px; margin-top: 20px">
+        {{ form.hidden_tag() }}
+        <h1>Редактирование кол-ва товара</h1>
+        <b>Текущее кол-во товара: {{ game.count }}</b>
+        <p>
+            {{ form.new_count.label }}<br>
+            {{ form.new_count }}<br>
+            {% for error in form.new_count.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+        <a href="/admin_games"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+    </form>
+{% endblock %}

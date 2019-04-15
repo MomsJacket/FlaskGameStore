@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/gameicon.ico') }}">
+    <title>{{title}}</title>
+</head>
+  <body style="background-image: url({{ url_for('static', filename='img/background.png') }}); background-size: cover; background-attachment: fixed; width:1024px; margin-right: auto; margin-left: auto; min-height: 100%; margin-top:100px">
+    <header style="height: 100%">
+        <nav class="navbar navbar-light bg-light">
+            <a href="/index"><img src= "{{ url_for('static', filename='img/logo.png') }}"></a>
+            {% if "username" in session %}
+            <div class="form-group form-icon" style="position: absolute; left: 500px; top: 20px">
+              <label class="control-label" for="name-user">Имя пользователя:</label>
+                <p>{{ username }}</p>
+              <i class="glyphicon glyphicon-user input-icon" aria-hidden="true"></i>
+            </div>
+            {% if session['username'] != 'admin' %}
+            <a class="navbar-brand" href="/user_pur" style="left: 260px; position: relative">Мои покупки</a>
+            {% endif %}
+            <a class="navbar-brand" href="/logout">Выйти</a>
+            {% else %}
+            <div>
+                <a href="/registration"><button type="button" class="btn btn-outline-primary" style="margin-left: 5px">Регистрация</button></a>
+                <a href="/login"><button type="button" class="btn btn-outline-primary" style="margin-left: 5px">Вход</button></a>
+            </div>
+            {% endif %}
+        </nav>
+    </header>
+    <main role="main" class="container" style="min-width:1024px; padding:0">
+        <div style="height:100%; min-height: 1024px; background-color: #FFFFFF; width:1024px">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+ 
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+          {{ message }}
+        </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+    <form action="" method="post" novalidate style="margin-left: 10px; margin-top: 20px">
+        {{ form.hidden_tag() }}
+        <h1>Авторизация</h1>
+        {% if session['username'] != 'admin' %}
+        <i>
+            Для получения возможности купить товар необходимо авторизоваться на сайте или создать новую учетную запись
+        </i>
+        {% endif %}
+        <p>
+            {{ form.username.label }}<br>
+            {{ form.username }}<br>
+            {% for error in form.username.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.password.label }}<br>
+            {{ form.password }}<br>
+            {% for error in form.password.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+        <p>{{ form.submit() }}</p>
+        <a href="{{ url_for('registration') }}">Регистрация</a>
+    </form>
+{% endblock %}
