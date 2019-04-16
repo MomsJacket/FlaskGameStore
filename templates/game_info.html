@@ -17,6 +17,7 @@
             <a href="/buy_game/{{ game.game_id }}"> <button type="button" class="btn btn-outline-info">Добавить в корзину</button></a>
         {% else %}
             <a href="/buy_game/{{ game.game_id }}"> <button type="button" class="btn btn-outline-info">Купить</button></a>
+        	<a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
         {% endif %}
         {% else %}
         <a href="/admin_games"> <button type="button" class="btn btn-outline-info">Назад</button></a>
