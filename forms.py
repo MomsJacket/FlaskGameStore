@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms import IntegerField, SelectField, TextAreaField, SelectMultipleField
-from wtforms.validators import DataRequired, Email
+from wtforms.validators import DataRequired, Email, URL
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 
 
@@ -27,6 +27,7 @@ class AddGameForm(FlaskForm):
     """Форма добавление игры администратором"""
     game_name = StringField('Название игры', validators=[DataRequired()])
     genre = SelectField('Основной жанр', validators=[DataRequired()], default=4, coerce=str)
+    publisher = SelectField('Издатель', validators=[DataRequired()], default=1, coerce=str)
     description = TextAreaField('Описание игры', validators=[DataRequired()])
     system_req = TextAreaField('Системные требования', validators=[DataRequired()])
     price = IntegerField('Цена', validators=[DataRequired()])
@@ -39,7 +40,7 @@ class AddGameForm(FlaskForm):
         ('Французский', 'Французский')
     ], validators=[DataRequired()], coerce=str)
     game_year = IntegerField('Год выпуска', validators=[DataRequired()])
-    image = FileField('Изображение игры', validators=[FileRequired(), FileAllowed(['jpg', 'png'])])
+    image = FileField('Изображение игры', validators=[FileAllowed(['jpg', 'png'])])
     count = IntegerField('Количество товара', validators=[DataRequired()])
     submit = SubmitField('Подтвердить')
 
@@ -63,7 +64,10 @@ class AddGenreForm(FlaskForm):
     submit = SubmitField('Подтвердить')
 
 
-class ChangeCountForm(FlaskForm):
+class AddPublisherForm(FlaskForm):
     """Форма добавления жанра"""
-    new_count = StringField('Количество товара', validators=[DataRequired()], default=10)
+    pub_name = StringField('Название издателя', validators=[DataRequired()])
+    address = TextAreaField('Адрес(а) издательской компании', default='Не указан', validators=[DataRequired()])
+    telephone = StringField('Телефон справочной службы', default='Не указан', validators=[DataRequired()])
+    site = StringField('Сайт издателя', default='Не указан', validators=[DataRequired()])
     submit = SubmitField('Подтвердить')

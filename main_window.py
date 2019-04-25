@@ -1,23 +1,131 @@
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug import secure_filename
-from wtforms.validators import DataRequired
 from flask import Flask, redirect, render_template, session, jsonify
 from flask import request, flash, url_for, make_response
-from forms import LoginForm, RegisterForm, AddGameForm, ChangeCountForm
+from forms import LoginForm, RegisterForm, AddGameForm, AddPublisherForm
 from forms import FilterPriceForm, FilterGenreForm, AddGenreForm
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc
-import datetime
 from PIL import Image
 import os
+from flask_restful import reqparse, abort, Api, Resource
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///store.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+
+class User(Resource):
+    def get(self, user_id):
+        abort_if_user_not_found(user_id)
+        user = User.query.filter_by(id=user_id).first()
+        answer = {'User': {'user_id': user.id, 'user_name': user.username, 'user_email': user.email}}
+        return {'user': answer}
+
+    def delete(self, user_id):
+        abort_if_user_not_found(user_id)
+        user = User.query.filter_by(id=user_id).first()
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'success': 'OK'})
+
+    def put(self, user_id):
+        args = parser.parse_args()
+        abort_if_user_not_found(user_id)
+        if not any(args[key] for key in ['user_name', 'password', 'email']):
+            return jsonify({'error': 'Empty request'})
+        if args.user_name is None and args.password is None and args.email is None:
+            return jsonify({'error': 'Bad request'})
+        user = User.query.filter_by(id=user_id).first()
+        if args.user_name is not None:
+            user.username = args.user_name
+        if args.password is not None:
+            user.password_hash = generate_password_hash(args.password)
+        if args.email is not None:
+            user.email = args.email
+        db.session.commit()
+        return jsonify({'success': 'OK'})
+
+
+class UsersList(Resource):
+    def get(self):
+        user = User.query.all()
+        answer = []
+        for i in user:
+            answer.append({"User": {'user_id': i.id, 'user_name': i.username, 'user_email': i.email}})
+        return answer
+
+    def post(self):
+        args = parser.parse_args()
+        if not args:
+            return jsonify({'error': 'Empty request'})
+        if not all(args[key] for key in ['user_name', 'password', 'email']):
+            return jsonify({'error': 'Bad request'})
+        try:
+            user = User(username=args.user_name,
+                        password_hash=generate_password_hash(args.password),
+                        email=args.email)
+            db.session.add(user)
+            db.session.commit()
+        except:
+            return jsonify({'error': 'User already exists'})
+        return jsonify({'success': 'OK'})
+
+
+class Game(Resource):
+    def get(self, game_id):
+        abort_if_game_not_found(game_id)
+        i = Game.query.filter_by(game_id=game_id).first()
+        answer = {
+            "Game": {'game_id': i.game_id, 'game_name': i.game_name, 'genre': i.genre,
+                     'discription': i.description,
+                     'system_requirement': i.system_req, 'price': i.price, 'languages': i.languages,
+                     'game_year': i.game_year, 'count_in_storage': i.count}}
+        return answer
+
+    def delete(self, game_id):
+        abort_if_game_not_found(game_id)
+        game = Game.query.filter_by(game_id=game_id).first()
+        db.session.delete(game)
+        db.session.commit()
+        return jsonify({'success': 'OK'})
+
+
+class GameList(Resource):
+    def get(self):
+        game = Game.query.all()
+        answer = []
+        for i in game:
+            answer.append({
+                "Game": {'game_id': i.game_id, 'game_name': i.game_name, 'genre': i.genre, 'discription': i.description,
+                         'system_requirement': i.system_req, 'price': i.price, 'languages': i.languages,
+                         'game_year': i.game_year, 'count_in_storage': i.count}})
+        return answer
+
+
+api = Api(app)
+api.add_resource(UsersList, '/users')
+api.add_resource(User, '/users/<int:user_id>')
+api.add_resource(GameList, '/games')
+api.add_resource(Game, '/game/<int:game_id>')
+
+parser = reqparse.RequestParser()
+parser.add_argument('user_id', required=False, type=int)
+parser.add_argument('user_name', required=False)
+parser.add_argument('password', required=False)
+parser.add_argument('email', required=False)
+
+
+def abort_if_user_not_found(user_id):
+    if not User.query.filter_by(id=user_id).first():
+        abort(404, message="User {} not found".format(user_id))
+
+
+def abort_if_game_not_found(game_id):
+    if not Game.query.filter_by(game_id=game_id).first():
+        abort(404, message="User {} not found".format(game_id))
 
 
 class User(db.Model):
@@ -46,11 +154,12 @@ class Game(db.Model):
     game_year = db.Column(db.INTEGER, unique=False)
     image = db.Column(db.TEXT, unique=False, default='unknown_game.jpg')
     count = db.Column(db.INTEGER, unique=False)
+    publisher = db.Column(db.String(80), unique=False)
 
     def __repr__(self):
         return '<Game {} {} {} {} {} {} {} {}>'.format(
             self.game_id, self.game_name, self.genre, self.description, self.system_req, self.price, self.game_year,
-            self.languages, self.image, self.count)
+            self.languages, self.image, self.count, self.publisher)
 
 
 class Genre(db.Model):
@@ -73,6 +182,19 @@ class Purchase(db.Model):
     def __repr__(self):
         return '<Purchase {} {} {}>'.format(
             self.pur_id, self.count, self.game_id)
+
+
+class Publisher(db.Model):
+    """Таблица издателей"""
+    pub_id = db.Column(db.Integer, primary_key=True)
+    pub_name = db.Column(db.String(128), unique=True, nullable=False)
+    address = db.Column(db.TEXT, unique=False, nullable=False)
+    telephone = db.Column(db.String(128), nullable=False)
+    site = db.Column(db.String(128), nullable=True)
+
+    def __repr__(self):
+        return '<Purchase {} {} {} {}>'.format(
+            self.pub_name, self.address, self.telephone, self.site)
 
 
 @app.route('/')
@@ -104,7 +226,7 @@ def login():
             session['user_id'] = user.id
             return redirect('/index')
         else:
-            flash('Имя пользователя или пароль не верны', 'warning')
+            flash('Имя пользователя или пароль не верны', 'error')
     return render_template('login.html', title='Авторизация', form=form)
 
 
@@ -149,14 +271,19 @@ def add_game():
         return redirect('/index')
     form = AddGameForm()
     genres = [(i.genre_name, i.genre_name) for i in Genre.query.all()]
+    publishers = [(i.pub_name, i.pub_name) for i in Publisher.query.all()]
     form.genre.choices = genres
+    form.publisher.choices = publishers
     if form.validate_on_submit():
-        filename = secure_filename(form.image.data.filename)
-        server_file = 'static/img/game_images/' + filename
-        form.image.data.save(server_file)
-        game_image = Image.open(server_file)
-        game_image = game_image.resize((300, 159), Image.ANTIALIAS)
-        game_image.save(server_file)
+        if form.image.data is not None:
+            filename = secure_filename(form.image.data.filename)
+            server_file = 'static/img/game_images/' + filename
+            form.image.data.save(server_file)
+            game_image = Image.open(server_file)
+            game_image = game_image.resize((300, 159), Image.ANTIALIAS)
+            game_image.save(server_file)
+        else:
+            filename = 'unknown_game.jpg'
         game = Game(game_name=form.game_name.data,
                     genre=form.genre.data,
                     description=form.description.data,
@@ -165,7 +292,8 @@ def add_game():
                     languages=', '.join(form.languages.data),
                     game_year=form.game_year.data,
                     image=filename,
-                    count=form.count.data)
+                    count=form.count.data,
+                    publisher=form.publisher.data)
         if Game.query.filter_by(game_name=game.game_name).first():
             flash('Игра с таким названием уже существует', 'warning')
         else:
@@ -173,14 +301,6 @@ def add_game():
             db.session.commit()
             return redirect('/index')
     return render_template("add_game.html", title='Добавление игры', form=form, username=session['username'])
-
-
-@app.route('/logout')
-def logout():
-    """ Функция выхода из учетной записи """
-    session.pop('username', 0)
-    session.pop('user_id', 0)
-    return redirect('/index')
 
 
 @app.route('/game_info/<int:game_id>')
@@ -192,6 +312,73 @@ def game_info(game_id):
                                title='Информация об игре ' + game.game_name)
     return render_template('game_info.html', game=game,
                            title='Информация об игре ' + game.game_name)
+
+
+@app.route('/delete_game/<int:game_id>', methods=['GET', 'POST'])
+def delete_game(game_id):
+    """ Удаление игры администратором """
+    if 'username' not in session:
+        return redirect('/index')
+    game = Game.query.filter_by(game_id=game_id).first()
+    if session['username'] == 'admin' and game:
+        os.remove('static/img/game_images/' + game.image)
+        db.session.delete(game)
+        db.session.commit()
+    return redirect('/admin_games')
+
+
+@app.route('/edit_game/<int:game_id>', methods=['GET', 'POST'])
+def edit_game(game_id):
+    form = AddGameForm()
+    if 'username' not in session:
+        return redirect('/index')
+    game = Game.query.filter_by(game_id=game_id).first()
+    genres = [(i.genre_name, i.genre_name) for i in Genre.query.all()]
+    form.genre.choices = genres
+    publishers = [(i.pub_name, i.pub_name) for i in Publisher.query.all()]
+    form.publisher.choices = publishers
+    if form.validate_on_submit():
+        if form.image.data is not None:
+            filename = secure_filename(form.image.data.filename)
+            server_file = 'static/img/game_images/' + filename
+            form.image.data.save(server_file)
+            game_image = Image.open(server_file)
+            game_image = game_image.resize((300, 159), Image.ANTIALIAS)
+            game_image.save(server_file)
+        else:
+            filename = 'unknown_game.jpg'
+        game.game_name = form.game_name.data
+        game.genre = form.genre.data
+        game.description = form.description.data
+        game.system_req = form.system_req.data
+        game.price = form.price.data
+        game.languages = ', '.join(form.languages.data)
+        game.game_year = form.game_year.data
+        game.count = form.count.data
+        game.image = filename
+        game.publisher = form.publisher.data
+        db.session.commit()
+        return redirect('/admin_games')
+    '''Устанавливаем дефолтные значения полей'''
+    form.genre.data = game.genre
+    form.game_name.data = game.game_name
+    form.description.data = game.description
+    form.system_req.data = game.system_req
+    form.price.data = game.price
+    form.game_year.data = game.game_year
+    form.count.data = game.count
+    form.languages.data = game.languages.split(',')
+    form.publisher.data = game.publisher
+    return render_template("edit_game.html", title='Редактирование игры', form=form, username=session['username'],
+                           image=game.image)
+
+
+@app.route('/logout')
+def logout():
+    """ Функция выхода из учетной записи """
+    session.pop('username', 0)
+    session.pop('user_id', 0)
+    return redirect('/index')
 
 
 @app.route('/sort_by_price_up')
@@ -286,25 +473,11 @@ def add_genre():
                            genres=genres)
 
 
-@app.route('/delete_game/<int:game_id>', methods=['GET', 'POST'])
-def delete_game(game_id):
-    """ Удаление игры администратором """
-    if 'username' not in session:
-        return redirect('/index')
-    game = Game.query.filter_by(game_id=game_id).first()
-    if session['username'] == 'admin' and game:
-        os.remove('static/img/game_images/' + game.image)
-        db.session.delete(game)
-        db.session.commit()
-    return redirect('/admin_games')
-
-
 @app.route('/delete_genre/<int:genre_id>', methods=['GET', 'POST'])
 def delete_genre(genre_id):
     """ Удаление жанра администратором """
     if 'username' not in session:
         return redirect('/index')
-    print(1)
     genre = Genre.query.filter_by(genre_id=genre_id).first()
     if session['username'] == 'admin' and genre:
         db.session.delete(genre)
@@ -344,22 +517,6 @@ def user_pur():
                            items=games, ids=ids, check=summary)
 
 
-@app.route('/change_count/<int:game_id>', methods=['GET', 'POST'])
-def change_count(game_id):
-    """ Страница изменения кол-ва товара """
-    form = ChangeCountForm()
-    if 'username' not in session:
-        return redirect('/index')
-    if session['username'] != 'admin':
-        return redirect('/index')
-    game = Game.query.filter_by(game_id=game_id).first()
-    if form.validate_on_submit():
-        game.count = form.new_count.data
-        db.session.commit()
-    return render_template('change_count.html', username=session['username'], title='Редактирование кол-ва товара',
-                           form=form, game=game)
-
-
 @app.route('/delete_pur/<int:pur_id>/<int:game_id>', methods=['GET', 'POST'])
 def delete_pur(pur_id, game_id):
     """ Удаление покупки пользователем, товар возвращается в магазин """
@@ -384,6 +541,57 @@ def but_purs(ids):
         db.session.delete(pur)
         db.session.commit()
     return redirect('/user_pur')
+
+
+@app.route('/add_publisher', methods=['GET', 'POST'])
+def add_publisher():
+    form = AddPublisherForm()
+    publishers = Publisher.query.all()
+    if form.validate_on_submit():
+        flash('Издатель успешно добавлен')
+        pub = Publisher(pub_name=form.pub_name.data,
+                        address=form.address.data,
+                        telephone=form.telephone.data,
+                        site=form.site.data)
+        db.session.add(pub)
+        db.session.commit()
+        return redirect('/add_publisher')
+    return render_template('add_publisher.html', title='Добавление издателя', form=form, username=session['username'],
+                           publishers=publishers)
+
+
+@app.route('/edit_publisher/<int:pub_id>', methods=['GET', 'POST'])
+def edit_publisher(pub_id):
+    form = AddPublisherForm()
+    if 'username' not in session:
+        return redirect('/index')
+    pub = Publisher.query.filter_by(pub_id=pub_id).first()
+    if form.validate_on_submit():
+        pub.pub_name = form.pub_name.data
+        pub.address = form.address.data
+        pub.telephone = form.telephone.data
+        pub.site = form.site.data
+        db.session.commit()
+        flash('Измениния прошли успешно!')
+        return redirect('/edit_publisher/' + str(pub.pub_id))
+    '''Устанавливаем дефолтные значения полей'''
+    form.pub_name.data = pub.pub_name
+    form.address.data = pub.address
+    form.telephone.data = pub.telephone
+    form.site.data = pub.site
+    return render_template("edit_publisher.html", title='Редактирование издателя', form=form,
+                           username=session['username'])
+
+
+@app.route('/delete_pub/<int:pub_id>', methods=['GET', 'POST'])
+def delete_pub(pub_id):
+    """ Удаление покупки пользователем, товар возвращается в магазин """
+    if 'username' not in session:
+        return redirect('/index')
+    pub = Publisher.query.filter_by(pub_id=pub_id).first()
+    db.session.delete(pub)
+    db.session.commit()
+    return redirect('/add_publisher')
 
 
 if __name__ == '__main__':

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+ 
+{% block content %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-primary" role="alert">
+              {{ message }}
+            </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form action="" method="post" novalidate style="margin-left: 10px; margin-top: 20px" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <p>
+            <h1>Добавление издателя</h1>
+            {{ form.pub_name.label }}<br>
+            {{ form.pub_name }}<br>
+            {% for error in form.pub_name.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.address.label }}<br>
+            {{ form.address }}<br>
+            {% for error in form.address.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.telephone.label }}<br>
+            {{ form.telephone }}<br>
+            {% for error in form.telephone.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.site.label }}<br>
+            {{ form.site }}<br>
+            {% for error in form.site.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+        <a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+    </form>
+        <div style="padding-top: 30px; padding-left:10px">
+            <b>Имеющиеся издатели:</b>
+            {% if publishers %}
+            <ul class="list-group">
+            {% for item in publishers %}
+                <li class="list-group-item">{{ item.pub_name }}<a href="/edit_publisher/{{ item.pub_id }}"><button style="left: 780px; position: absolute">Редактировать</button></a><a href="/delete_pub/{{ item.pub_id }}"><button style="left: 920px; position: absolute">Удалить</button></a></li>
+            {% endfor %}
+            </ul>
+            {% else %}
+            <p><i>На данный момент издателей нет в базе данных</i></p>
+            {% endif %}
+        </div>
+{% endblock %}

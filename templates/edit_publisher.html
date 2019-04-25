@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+ 
+{% block content %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-primary" role="alert">
+              {{ message }}
+            </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form action="" method="post" novalidate style="margin-left: 10px; margin-top: 20px" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <p>
+            <h1>Редактирование издателя</h1>
+            {{ form.pub_name.label }}<br>
+            {{ form.pub_name }}<br>
+            {% for error in form.pub_name.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.address.label }}<br>
+            {{ form.address }}<br>
+            {% for error in form.address.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.telephone.label }}<br>
+            {{ form.telephone }}<br>
+            {% for error in form.telephone.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.site.label }}<br>
+            {{ form.site }}<br>
+            {% for error in form.site.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+        <a href="/add_publisher"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+    </form>
+{% endblock %}

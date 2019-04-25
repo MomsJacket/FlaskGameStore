@@ -15,7 +15,7 @@
     <form action="" method="post" novalidate style="margin-left: 10px; margin-top: 20px" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         <p>
-            <h1>Добавление игры</h1>
+            <h1>Редактирование игры</h1>
             {{ form.game_name.label }}<br>
             {{ form.game_name }}<br>
             {% for error in form.game_name.errors %}
@@ -87,6 +87,8 @@
                 </div>
             {% endfor %}
         </p>
+        <b>Текущее фото товара:</b>
+        <img src="{{ url_for('static', filename='img/game_images/' + image) }}">
         <p>
             {{ form.image.file }}<br>
             {{ form.image }}<br>
@@ -96,7 +98,7 @@
                 </div>
             {% endfor %}
         </p>
-                <p>
+        <p>
             {{ form.count.label }}<br>
             {{ form.count }}<br>
             {% for error in form.count.errors %}
@@ -106,6 +108,6 @@
             {% endfor %}
         </p>
         <p>{{ form.submit() }}</p>
-        <a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+        <a href="/admin_games"> <button type="button" class="btn btn-outline-info">Назад</button></a>
     </form>
 {% endblock %}

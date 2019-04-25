@@ -13,7 +13,7 @@
             <div style="left: 320px; top: 120px; position: absolute; font-size: 14px">Кол-во товара: {{game.count}}</div>
         </a>
         <a href="/delete_game/{{ game.game_id }}"> <button type="button" class="btn btn-outline-info" onclick="return confirm('Вы точно хотите удалить модель из списка?')">Удалить</button></a>
-        <a href="/change_count/{{ game.game_id }}"> <button type="button" class="btn btn-outline-info">Редактировать кол-во товара</button></a>
+        <a href="/edit_game/{{ game.game_id }}"> <button type="button" class="btn btn-outline-info">Редактировать товар и его кол-во</button></a>
     </div>
     {% endfor %}
     <div style="margin-top: 30px"><a href="/index" style="padding-left: 470px"> <button type="button" class="btn btn-outline-info" style="margin-top: 30px">Назад</button></a></div>

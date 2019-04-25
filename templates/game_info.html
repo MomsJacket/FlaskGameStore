@@ -10,14 +10,15 @@
       <p>Системные требования: {{ game.system_req }}</p>
       <p>Поддерживаемые языки: {{ game.languages }}</p>
       <p>Жанр: {{ game.genre }}</p>
-        <p>Год издания: {{ game.game_year }}</p>
+      <p>Год издания: {{ game.game_year }}</p>
+      <p>Издатель: {{ game.publisher }}</p>
         {% if session['username'] != 'admin' %}
         {% if 'username' in session %}
             <a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
             <a href="/buy_game/{{ game.game_id }}"> <button type="button" class="btn btn-outline-info">Добавить в корзину</button></a>
         {% else %}
             <a href="/buy_game/{{ game.game_id }}"> <button type="button" class="btn btn-outline-info">Купить</button></a>
-        	<a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+            <a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
         {% endif %}
         {% else %}
         <a href="/admin_games"> <button type="button" class="btn btn-outline-info">Назад</button></a>
