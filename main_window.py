@@ -9,12 +9,37 @@ from sqlalchemy import desc
 from PIL import Image
 import os
 from flask_restful import reqparse, abort, Api, Resource
+from flask_mail import Mail, Message
+from random import choice
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///store.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MAIL_SERVER'] = 'smtp.mail.ru'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = 'flaskgamestore@mail.ru'  # enter your email here
+app.config['MAIL_DEFAULT_SENDER'] = 'flaskgamestore@mail.ru'  # enter your email here
+app.config['MAIL_PASSWORD'] = '3zD-Krm-eX6-6A9'  # enter your password here
 db = SQLAlchemy(app)
+
+# Найстройки сервера для отправки на эл.почту
+mail = Mail(app)
+mail.init_app(app)
+
+ADMINS = ['flaskgamestore@mail.ru']
+symbols = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",
+           "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3",
+           "4", "5", "6", "7", "8", "9", "0"]
+send_mail = False
+
+
+def send_email(subject, sender, recipients, text_body, html_body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
+    mail.send(msg)
 
 
 class User(Resource):
@@ -128,6 +153,16 @@ def abort_if_game_not_found(game_id):
         abort(404, message="User {} not found".format(game_id))
 
 
+def key_gen():
+    key = ''
+    for i in range(4):
+        for j in range(4):
+            key += choice(symbols)
+        key += '-'
+    key = key[:-1]
+    return key
+
+
 class User(db.Model):
     """Таблица пользователей"""
     id = db.Column(db.Integer, primary_key=True)
@@ -203,7 +238,9 @@ def index():
     """Основая страница для обычного пользователя или для администратора
     Пароль и логин администратора: admin:superadmin
     Также имеются 2 пользователя: user:123 и user2:123 """
+    global send_mail
     db.create_all()
+    send_mail = False
     if 'username' not in session:
         games = Game.query.all()
         return render_template('index.html', games=games, title='FlaskGameStore')
@@ -450,7 +487,8 @@ def filter_down():
     games = Game.query.all()
     if 'username' not in session:
         return render_template('index.html', games=games, title='FlaskGameStore')
-    return render_template('index.html', username=session['username'], games=games, title='FlaskGameStore')
+    return render_template('index.html', username=session['username'], games=games,
+                           title='FlaskGameStore')
 
 
 @app.route('/add_genre', methods=['GET', 'POST'])
@@ -469,7 +507,8 @@ def add_genre():
             db.session.add(genre)
             db.session.commit()
     genres = Genre.query.all()
-    return render_template('add_genre.html', username=session['username'], form=form, title='Добавление жанра',
+    return render_template('add_genre.html', username=session['username'], form=form,
+                           title='Добавление жанра',
                            genres=genres)
 
 
@@ -514,7 +553,7 @@ def user_pur():
         summary += Game.query.filter_by(game_id=item.game_id).first().price
     ids = ';'.join(ids)
     return render_template('purchase.html', username=session['username'], title='Мои покупки',
-                           items=games, ids=ids, check=summary)
+                           items=games, ids=ids, check=summary, mail=send_mail)
 
 
 @app.route('/delete_pur/<int:pur_id>/<int:game_id>', methods=['GET', 'POST'])
@@ -532,14 +571,91 @@ def delete_pur(pur_id, game_id):
 
 @app.route('/buy_purs/<ids>', methods=['GET', 'POST'])
 def but_purs(ids):
+    global send_mail
     """ Окончательная покупка товара пользователем"""
     if 'username' not in session:
         return redirect('/index')
     ids = ids.split(';')
+    user = User.query.filter_by(username=session['username']).first()
+    games = []
     for i in ids:
         pur = Purchase.query.filter_by(pur_id=i).first()
+        games.append(Game.query.filter_by(game_id=pur.game_id).first())
         db.session.delete(pur)
         db.session.commit()
+    purchases = ''
+    price = 0
+    for i in games:
+        purchases += '''<table style="background-color: #DCDCDC; margin-top: 20px">
+                            <tr>
+                                <td class="content footer">
+                                    <p>Название игры: {}</p>
+                                    <p>Цена: {}</p>
+                                    <p>Ключ: {}</p>
+                                </td>
+                            </tr>
+                        </table>   
+                        '''.format(i.game_name, i.price, key_gen())
+        price += int(i.price)
+    text = user.username + ', это данные вашей покупки на сайте FlaskGameStore'
+    html_text = '''<html xmlns="http://www.w3.org/1999/xhtml">
+                    <head>
+                        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                        <meta name="viewport" content="width=device-width"/>
+                    
+                        <!-- For development, pass document through inliner -->
+                        <link rel="stylesheet" href="css/simple.css">
+                    
+                        <style type="text/css">
+                    
+                        /* Your custom styles go here */
+                    
+                        </style>
+                    </head>
+                    <body>
+                    <table class="body-wrap">
+                        <tr>
+                            <td class="container">
+                    
+                                <!-- Message start -->
+                                <table>
+                                    <tr>
+                                        <td align="center" class="masthead">
+                    
+                                            <h1>Спасибо за покупку!</h1>
+                    
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="content">
+                    
+                                            <h2>Привет, {}</h2>
+                    
+                                            <p>Ваши покупки:</p>
+                                            
+                                            {}
+                                            
+                                            <p>Общая стоимость: {}</p>
+                                            <p>Рады будем видеть вас еще раз на нашем сайте <a href="http://127.0.0.1:8080">http://127.0.0.1:8080</a>. Да, пока локальный.</p>
+                    
+                                            <p><em>– Тайный агент</em></p>
+                    
+                                        </td>
+                                    </tr>
+                                </table>
+                    
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="container">                  
+                            </td>
+                        </tr>
+                    </table>
+                    </body>
+                    </html>
+    '''.format(user.username, purchases, price)
+    send_email('FlaskGameStore', ADMINS[0], [user.email], text, html_text)
+    send_mail = True
     return redirect('/user_pur')
 
 
@@ -556,7 +672,8 @@ def add_publisher():
         db.session.add(pub)
         db.session.commit()
         return redirect('/add_publisher')
-    return render_template('add_publisher.html', title='Добавление издателя', form=form, username=session['username'],
+    return render_template('add_publisher.html', title='Добавление издателя',
+                           form=form, username=session['username'],
                            publishers=publishers)
 
 
@@ -592,6 +709,17 @@ def delete_pub(pub_id):
     db.session.delete(pub)
     db.session.commit()
     return redirect('/add_publisher')
+
+
+@app.route('/pub_info/<pub_name>/<int:game_id>', methods=['GET', 'POST'])
+def pub_info(pub_name, game_id):
+    """ Страница для отображения основной информации об издателе """
+    pub = Publisher.query.filter_by(pub_name=pub_name).first()
+    if 'username' in session:
+        return render_template('pub_info.html', pub=pub, username=session['username'],
+                               title='Информация об издателе ' + pub.pub_name, id=game_id)
+    return render_template('pub_info.html', pub=pub,
+                           title='Информация об издателе ' + pub.pub_name, id=game_id)
 
 
 if __name__ == '__main__':

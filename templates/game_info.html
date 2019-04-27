@@ -11,7 +11,7 @@
       <p>Поддерживаемые языки: {{ game.languages }}</p>
       <p>Жанр: {{ game.genre }}</p>
       <p>Год издания: {{ game.game_year }}</p>
-      <p>Издатель: {{ game.publisher }}</p>
+        <p>Издатель: <a href="/pub_info/{{game.publisher}}/{{game.game_id}}">{{ game.publisher }}</a></p>
         {% if session['username'] != 'admin' %}
         {% if 'username' in session %}
             <a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>

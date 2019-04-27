@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if not items %}
-	<i style="position: absolute; left: 635px">На данный момент в вашей корзине не имеется покупок</i>
+{% if mail %}
+	<b>Все данные о вашей покупке мы отправили на ваш e-mail.</b>
+{% else %}
+	{% if not items %}
+		<i style="position: absolute; left: 635px">На данный момент в вашей корзине не имеется покупок</i>
+	{% endif %}
 {% endif %}
-
 {% for item in items %}
     <div style="height: 159px; width: 800px; margin-top: 30px; position: relative; left: 10px; top: 20px">
         <div style="height: 159px; background-color: #C0C0C0; display: block">

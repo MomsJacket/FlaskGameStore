@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="jumbotron" style="margin-top: 30px; margin-left: 50px; margin-right: 50px">
+      <h3 class="display-4">{{ pub.pub_name }}</h3>
+      <hr class="my-4">
+      <p class="lead">Адрес организации: {{ pub.address }}</p>
+      <p>Телефон: {{ pub.telephone }}</p>
+      <p>Сайт: {{ pub.site }}</p>
+      <a href="/game_info/{{id}}"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+    </div>
+{% endblock %}
